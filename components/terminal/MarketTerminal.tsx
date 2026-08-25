@@ -1,9 +1,5 @@
 "use client";
 
-import { MARKET_SYMBOLS } from "@/features/market/market.types";
-
-import { useMarketStream } from "@/hooks/use-market-stream";
-
 import { ConnectionPanel } from "./ConnectionPanel";
 
 import { PriceCard } from "./PriceCard";
@@ -12,23 +8,62 @@ import { ProcessingLab } from "./ProcessingLab";
 import { AnalyticsPanel } from "./AnalyticsPanel";
 import { useBrowserPerformance } from "@/hooks/use-browser-performance";
 
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
+
+import {
+  connectRequested,
+  disconnectRequested,
+  selectConnectionMetrics,
+  selectConnectionStatus,
+} from "@/features/connection/connection.slice";
+
+import {
+  dataSourceChanged,
+  processingModeChanged,
+  selectDataSource,
+  selectProcessingMetrics,
+  selectProcessingMode,
+  selectProcessorMetrics,
+  selectSimulationRate,
+  simulationRateChanged,
+} from "@/features/benchmark/benchmark.slice";
+
+import {
+  selectAnalytics,
+  selectTickerBySymbol,
+} from "@/features/market/market.selectors";
+
+import {
+  MARKET_SYMBOLS,
+  type MarketSymbol,
+} from "@/features/market/market.types";
+
+function ConnectedPriceCard({ symbol }: { symbol: MarketSymbol }) {
+  const ticker = useAppSelector(
+    (state) => selectTickerBySymbol(state, symbol) ?? null,
+  );
+
+  return <PriceCard symbol={symbol} ticker={ticker} />;
+}
+
 export function MarketTerminal() {
-  const {
-    tickers,
-    analytics,
-    status,
-    metrics,
-    processingMetrics,
-    processorMetrics,
-    dataSource,
-    simulationRate,
-    processingMode,
-    setDataSource,
-    setSimulationRate,
-    setProcessingMode,
-    connect,
-    disconnect,
-  } = useMarketStream();
+  const dispatch = useAppDispatch();
+
+  const status = useAppSelector(selectConnectionStatus);
+
+  const metrics = useAppSelector(selectConnectionMetrics);
+
+  const dataSource = useAppSelector(selectDataSource);
+
+  const simulationRate = useAppSelector(selectSimulationRate);
+
+  const processingMode = useAppSelector(selectProcessingMode);
+
+  const processingMetrics = useAppSelector(selectProcessingMetrics);
+
+  const processorMetrics = useAppSelector(selectProcessorMetrics);
+
+  const analytics = useAppSelector(selectAnalytics);
 
   const browserMetrics = useBrowserPerformance();
 
@@ -64,7 +99,9 @@ export function MarketTerminal() {
             <button
               type="button"
               disabled={isConnected}
-              onClick={connect}
+              onClick={() => {
+                dispatch(connectRequested());
+              }}
               className="rounded-lg border border-white/10 px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Connect
@@ -73,7 +110,9 @@ export function MarketTerminal() {
             <button
               type="button"
               disabled={!isConnected}
-              onClick={disconnect}
+              onClick={() => {
+                dispatch(disconnectRequested());
+              }}
               className="rounded-lg border border-white/10 px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Disconnect
@@ -100,11 +139,7 @@ export function MarketTerminal() {
 
           <div className="grid gap-4 lg:grid-cols-3">
             {MARKET_SYMBOLS.map((symbol) => (
-              <PriceCard
-                key={symbol}
-                symbol={symbol}
-                ticker={tickers[symbol]}
-              />
+              <ConnectedPriceCard key={symbol} symbol={symbol} />
             ))}
           </div>
         </section>
@@ -121,9 +156,15 @@ export function MarketTerminal() {
             processingMetrics={processingMetrics}
             processorMetrics={processorMetrics}
             browserMetrics={browserMetrics}
-            onSourceChange={setDataSource}
-            onRateChange={setSimulationRate}
-            onProcessingModeChange={setProcessingMode}
+            onSourceChange={(source) => {
+              dispatch(dataSourceChanged(source));
+            }}
+            onRateChange={(rate) => {
+              dispatch(simulationRateChanged(rate));
+            }}
+            onProcessingModeChange={(mode) => {
+              dispatch(processingModeChanged(mode));
+            }}
           />
         </div>
 
