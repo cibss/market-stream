@@ -7,9 +7,11 @@ import { useMarketStream } from "@/hooks/use-market-stream";
 import { ConnectionPanel } from "./ConnectionPanel";
 
 import { PriceCard } from "./PriceCard";
+import ProcessingMetric from "./ProcessingMetric";
 
 export function MarketTerminal() {
-  const { tickers, status, metrics, connect, disconnect } = useMarketStream();
+  const { tickers, status, metrics, processingMetrics, connect, disconnect } =
+    useMarketStream();
 
   const isConnected =
     status === "connected" ||
@@ -92,6 +94,23 @@ export function MarketTerminal() {
           <ConnectionPanel status={status} metrics={metrics} />
         </div>
 
+        <section className="mt-4 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-3">
+          <ProcessingMetric
+            label="UI commits / sec"
+            value={processingMetrics.uiCommitsPerSecond}
+          />
+
+          <ProcessingMetric
+            label="Last batch size"
+            value={processingMetrics.lastBatchSize}
+          />
+
+          <ProcessingMetric
+            label="Ticker updates processed"
+            value={processingMetrics.totalTickerUpdates.toLocaleString()}
+          />
+        </section>
+
         <section className="mt-6 rounded-xl border border-white/10 bg-white/[0.02] p-5">
           <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">
             CURRENT ARCHITECTURE
@@ -102,19 +121,19 @@ export function MarketTerminal() {
 
             <Arrow />
 
+            <ArchitectureNode>Edge Relay</ArchitectureNode>
+
+            <Arrow />
+
             <ArchitectureNode>WebSocket</ArchitectureNode>
 
             <Arrow />
 
-            <ArchitectureNode>Adapter</ArchitectureNode>
+            <ArchitectureNode>RxJS</ArchitectureNode>
 
             <Arrow />
 
-            <ArchitectureNode>React State</ArchitectureNode>
-
-            <Arrow />
-
-            <ArchitectureNode>UI</ArchitectureNode>
+            <ArchitectureNode>React</ArchitectureNode>
           </div>
 
           <p className="mt-5 max-w-3xl text-sm leading-6 text-zinc-600">

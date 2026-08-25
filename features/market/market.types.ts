@@ -51,3 +51,9 @@ export function createEmptyTickerMap(): MarketTickerMap {
     "SOL-USD": null,
   };
 }
+
+export type ProcessingMetrics = {
+  uiCommitsPerSecond: number;
+  lastBatchSize: number;
+  totalTickerUpdates: number;
+};

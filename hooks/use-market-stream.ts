@@ -13,10 +13,12 @@ import {
   COINBASE_MARKET_WS_URL,
   createHeartbeatSubscription,
   createTickerSubscription,
-  parseCoinbaseTickerMessage,
 } from "@/lib/market-data/coinbase";
 
+import { createMarketStream } from "@/lib/market-data/market-stream";
+
 import { WebSocketClient } from "@/lib/websocket/websocket-client";
+import type { ProcessingMetrics } from "@/features/market/market.types";
 
 const INITIAL_METRICS: ConnectionMetrics = {
   connectedAt: null,
@@ -26,6 +28,12 @@ const INITIAL_METRICS: ConnectionMetrics = {
   reconnectCount: 0,
 };
 
+const INITIAL_PROCESSING_METRICS: ProcessingMetrics = {
+  uiCommitsPerSecond: 0,
+  lastBatchSize: 0,
+  totalTickerUpdates: 0,
+};
+
 export function useMarketStream() {
   const [tickers, setTickers] = useState(createEmptyTickerMap);
 
@@ -33,65 +41,30 @@ export function useMarketStream() {
 
   const [metrics, setMetrics] = useState<ConnectionMetrics>(INITIAL_METRICS);
 
+  const [processingMetrics, setProcessingMetrics] = useState<ProcessingMetrics>(
+    INITIAL_PROCESSING_METRICS,
+  );
+
   const clientRef = useRef<WebSocketClient | null>(null);
-
-  const messagesThisSecondRef = useRef(0);
-
-  const totalMessagesRef = useRef(0);
-
-  const lastMessageAtRef = useRef<number | null>(null);
 
   const reconnectCountRef = useRef(0);
 
   useEffect(() => {
     let mounted = true;
 
-    const client = new WebSocketClient({
-      url: COINBASE_MARKET_WS_URL,
+    /**
+     * RxJS stream belongs to this
+     * connection lifecycle.
+     */
+    const marketStream = createMarketStream();
 
-      onStatusChange: (nextStatus) => {
-        if (mounted) {
-          setStatus(nextStatus);
-        }
-      },
-
-      onOpen: (socket) => {
+    /**
+     * React subscribes to already
+     * parsed + batched ticker data.
+     */
+    const tickerSubscription = marketStream.tickerBatch$.subscribe(
+      (updates) => {
         if (!mounted) {
-          return;
-        }
-
-        setMetrics((current) => ({
-          ...current,
-          connectedAt: Date.now(),
-        }));
-
-        /*
-         * Coinbase accepts one channel
-         * per subscription message.
-         *
-         * So ticker and heartbeats
-         * are separate messages.
-         */
-
-        socket.send(createTickerSubscription(MARKET_SYMBOLS));
-
-        socket.send(createHeartbeatSubscription());
-      },
-
-      onMessage: (message) => {
-        if (!mounted) {
-          return;
-        }
-
-        messagesThisSecondRef.current += 1;
-
-        totalMessagesRef.current += 1;
-
-        lastMessageAtRef.current = Date.now();
-
-        const updates = parseCoinbaseTickerMessage(message);
-
-        if (updates.length === 0) {
           return;
         }
 
@@ -107,9 +80,95 @@ export function useMarketStream() {
           return next;
         });
       },
+    );
+
+    const processingSubscription = marketStream.processingMetrics$.subscribe(
+      (nextMetrics) => {
+        if (!mounted) {
+          return;
+        }
+
+        setProcessingMetrics(nextMetrics);
+      },
+    );
+
+    /**
+     * Stream metrics are also
+     * derived through RxJS.
+     *
+     * This emits at most once
+     * per second.
+     */
+    const metricsSubscription = marketStream.metrics$.subscribe(
+      (streamMetrics) => {
+        if (!mounted) {
+          return;
+        }
+
+        setMetrics((current) => ({
+          ...current,
+
+          messagesPerSecond: streamMetrics.messagesPerSecond,
+
+          totalMessages: streamMetrics.totalMessages,
+
+          lastMessageAt: streamMetrics.lastMessageAt,
+        }));
+      },
+    );
+
+    const client = new WebSocketClient({
+      url: COINBASE_MARKET_WS_URL,
+
+      onStatusChange: (nextStatus) => {
+        if (!mounted) {
+          return;
+        }
+
+        setStatus(nextStatus);
+      },
+
+      onOpen: (socket) => {
+        if (!mounted) {
+          return;
+        }
+
+        setMetrics((current) => ({
+          ...current,
+          connectedAt: Date.now(),
+        }));
+
+        socket.send(createTickerSubscription(MARKET_SYMBOLS));
+
+        socket.send(createHeartbeatSubscription());
+      },
+
+      /**
+       * Important:
+       *
+       * WebSocket no longer knows
+       * anything about parsing,
+       * market state, or React.
+       *
+       * It only pushes raw messages
+       * into the reactive stream.
+       */
+      onMessage: (message) => {
+        marketStream.push(message);
+      },
 
       onReconnectScheduled: () => {
         reconnectCountRef.current += 1;
+
+        if (!mounted) {
+          return;
+        }
+
+        setMetrics((current) => ({
+          ...current,
+
+          reconnectCount: reconnectCountRef.current,
+        }));
       },
     });
 
@@ -117,30 +176,20 @@ export function useMarketStream() {
 
     client.connect();
 
-    const metricsInterval = window.setInterval(() => {
-      if (!mounted) {
-        return;
-      }
-
-      setMetrics((current) => ({
-        ...current,
-
-        messagesPerSecond: messagesThisSecondRef.current,
-
-        totalMessages: totalMessagesRef.current,
-
-        lastMessageAt: lastMessageAtRef.current,
-
-        reconnectCount: reconnectCountRef.current,
-      }));
-
-      messagesThisSecondRef.current = 0;
-    }, 1000);
-
     return () => {
       mounted = false;
 
-      window.clearInterval(metricsInterval);
+      /**
+       * Every RxJS subscription
+       * should be explicitly cleaned.
+       */
+      tickerSubscription.unsubscribe();
+
+      processingSubscription.unsubscribe();
+
+      metricsSubscription.unsubscribe();
+
+      marketStream.complete();
 
       client.disconnect();
 
@@ -160,6 +209,7 @@ export function useMarketStream() {
     tickers,
     status,
     metrics,
+    processingMetrics,
     connect,
     disconnect,
   };
