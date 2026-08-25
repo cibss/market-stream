@@ -8,10 +8,29 @@ import { ConnectionPanel } from "./ConnectionPanel";
 
 import { PriceCard } from "./PriceCard";
 import ProcessingMetric from "./ProcessingMetric";
+import { ProcessingLab } from "./ProcessingLab";
+import { AnalyticsPanel } from "./AnalyticsPanel";
+import { useBrowserPerformance } from "@/hooks/use-browser-performance";
 
 export function MarketTerminal() {
-  const { tickers, status, metrics, processingMetrics, connect, disconnect } =
-    useMarketStream();
+  const {
+    tickers,
+    analytics,
+    status,
+    metrics,
+    processingMetrics,
+    processorMetrics,
+    dataSource,
+    simulationRate,
+    processingMode,
+    setDataSource,
+    setSimulationRate,
+    setProcessingMode,
+    connect,
+    disconnect,
+  } = useMarketStream();
+
+  const browserMetrics = useBrowserPerformance();
 
   const isConnected =
     status === "connected" ||
@@ -94,6 +113,24 @@ export function MarketTerminal() {
           <ConnectionPanel status={status} metrics={metrics} />
         </div>
 
+        <div className="mt-6">
+          <ProcessingLab
+            dataSource={dataSource}
+            simulationRate={simulationRate}
+            processingMode={processingMode}
+            processingMetrics={processingMetrics}
+            processorMetrics={processorMetrics}
+            browserMetrics={browserMetrics}
+            onSourceChange={setDataSource}
+            onRateChange={setSimulationRate}
+            onProcessingModeChange={setProcessingMode}
+          />
+        </div>
+
+        <div className="mt-6">
+          <AnalyticsPanel analytics={analytics} />
+        </div>
+
         <section className="mt-4 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-3">
           <ProcessingMetric
             label="UI commits / sec"
@@ -117,7 +154,7 @@ export function MarketTerminal() {
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-3 font-mono text-sm">
-            <ArchitectureNode>Coinbase</ArchitectureNode>
+            <ArchitectureNode>Market Source</ArchitectureNode>
 
             <Arrow />
 
@@ -125,11 +162,11 @@ export function MarketTerminal() {
 
             <Arrow />
 
-            <ArchitectureNode>WebSocket</ArchitectureNode>
+            <ArchitectureNode>RxJS</ArchitectureNode>
 
             <Arrow />
 
-            <ArchitectureNode>RxJS</ArchitectureNode>
+            <ArchitectureNode>Worker</ArchitectureNode>
 
             <Arrow />
 

@@ -1,13 +1,17 @@
-import { Subject, bufferTime, filter, map, scan, share } from "rxjs";
+import { Subject, bufferTime, filter, map, merge, scan, share } from "rxjs";
 
-import type { MarketTicker } from "@/features/market/market.types";
+import type {
+  MarketTicker,
+  ProcessingMetrics,
+} from "@/features/market/market.types";
 
 import { parseCoinbaseTickerMessage } from "@/lib/market-data/coinbase";
-import type { ProcessingMetrics } from "@/features/market/market.types";
 
 export type MarketStreamMetrics = {
   messagesPerSecond: number;
+
   totalMessages: number;
+
   lastMessageAt: number | null;
 };
 
@@ -17,27 +21,32 @@ const INITIAL_METRICS: MarketStreamMetrics = {
   lastMessageAt: null,
 };
 
+const INITIAL_PROCESSING_METRICS: ProcessingMetrics = {
+  inputEventsPerSecond: 0,
+  uiCommitsPerSecond: 0,
+  lastBatchSize: 0,
+  totalTickerUpdates: 0,
+};
+
 export function createMarketStream() {
-  /**
-   * Bridge between the imperative
-   * WebSocket API and RxJS.
+  /*
+   * Raw transport messages.
+   *
+   * Only live Coinbase data
+   * enters here.
    */
   const rawMessageSubject = new Subject<string>();
 
-  /**
-   * We expose an Observable,
-   * not the Subject itself.
+  /*
+   * Already-normalized domain data.
    *
-   * Consumers can subscribe,
-   * but cannot accidentally call next().
+   * Simulator enters here.
    */
+  const simulatedTickerSubject = new Subject<MarketTicker[]>();
+
   const rawMessage$ = rawMessageSubject.asObservable();
 
-  /**
-   * Parse raw Coinbase messages
-   * into our application domain.
-   */
-  const parsedTicker$ = rawMessage$.pipe(
+  const liveTicker$ = rawMessage$.pipe(
     map((message) => parseCoinbaseTickerMessage(message)),
 
     filter((updates) => updates.length > 0),
@@ -45,15 +54,24 @@ export function createMarketStream() {
     share(),
   );
 
-  /**
-   * Instead of pushing every ticker
-   * update directly into React,
-   * collect updates for 100ms.
+  /*
+   * Merge two different sources
+   * into one domain stream.
    *
-   * Maximum React market commits:
-   * approximately 10 per second.
+   * From this point onward,
+   * processing doesn't care
+   * where data came from.
    */
-  const tickerBatch$ = parsedTicker$.pipe(
+  const tickerInput$ = merge(
+    liveTicker$,
+
+    simulatedTickerSubject.asObservable(),
+  ).pipe(share());
+
+  /*
+   * Application-level batching.
+   */
+  const tickerBatch$ = tickerInput$.pipe(
     bufferTime(100),
 
     map((batches) => batches.flat()),
@@ -63,18 +81,45 @@ export function createMarketStream() {
     share(),
   );
 
-  const INITIAL_PROCESSING_METRICS: ProcessingMetrics = {
-    uiCommitsPerSecond: 0,
-    lastBatchSize: 0,
-    totalTickerUpdates: 0,
-  };
+  /*
+   * WebSocket transport metrics.
+   *
+   * These are intentionally
+   * live-feed only.
+   */
+  const metrics$ = rawMessage$.pipe(
+    bufferTime(1000),
 
+    scan(
+      (previous, messages): MarketStreamMetrics => ({
+        messagesPerSecond: messages.length,
+
+        totalMessages: previous.totalMessages + messages.length,
+
+        lastMessageAt:
+          messages.length > 0 ? Date.now() : previous.lastMessageAt,
+      }),
+
+      INITIAL_METRICS,
+    ),
+
+    share(),
+  );
+
+  /*
+   * Domain processing metrics.
+   *
+   * Works for both:
+   *
+   * live
+   * simulation
+   */
   const processingMetrics$ = tickerBatch$.pipe(
     bufferTime(1000),
 
     scan(
       (previous, batches): ProcessingMetrics => {
-        const updatesThisSecond = batches.reduce(
+        const inputEvents = batches.reduce(
           (total, batch) => total + batch.length,
           0,
         );
@@ -82,11 +127,13 @@ export function createMarketStream() {
         const lastBatch = batches.at(-1);
 
         return {
+          inputEventsPerSecond: inputEvents,
+
           uiCommitsPerSecond: batches.length,
 
           lastBatchSize: lastBatch?.length ?? 0,
 
-          totalTickerUpdates: previous.totalTickerUpdates + updatesThisSecond,
+          totalTickerUpdates: previous.totalTickerUpdates + inputEvents,
         };
       },
 
@@ -96,38 +143,13 @@ export function createMarketStream() {
     share(),
   );
 
-  /**
-   * Derive stream metrics from
-   * the same raw message stream.
-   *
-   * One emission per second instead
-   * of causing a React update
-   * for every message.
-   */
-  const metrics$ = rawMessage$.pipe(
-    bufferTime(1000),
-
-    scan(
-      (previous, messages): MarketStreamMetrics => {
-        return {
-          messagesPerSecond: messages.length,
-
-          totalMessages: previous.totalMessages + messages.length,
-
-          lastMessageAt:
-            messages.length > 0 ? Date.now() : previous.lastMessageAt,
-        };
-      },
-
-      INITIAL_METRICS,
-    ),
-
-    share(),
-  );
-
   return {
-    push(message: string) {
+    pushLiveMessage(message: string) {
       rawMessageSubject.next(message);
+    },
+
+    pushSimulationBatch(batch: MarketTicker[]) {
+      simulatedTickerSubject.next(batch);
     },
 
     tickerBatch$,
@@ -138,6 +160,8 @@ export function createMarketStream() {
 
     complete() {
       rawMessageSubject.complete();
+
+      simulatedTickerSubject.complete();
     },
   };
 }
