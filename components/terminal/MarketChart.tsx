@@ -219,7 +219,7 @@ export function MarketChart() {
             <h2 className="text-lg font-semibold text-zinc-100">{selectedSymbol}</h2>
 
             <span className="rounded-md border border-white/10 px-2 py-1 font-mono text-[10px] text-zinc-500">
-              1s OHLC
+              1-second OHLC
             </span>
           </div>
         </div>

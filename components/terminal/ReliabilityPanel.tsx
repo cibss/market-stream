@@ -43,7 +43,7 @@ export function ReliabilityPanel() {
 
         <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
           Inject controlled failures into the streaming pipeline and verify that transport, parsing,
-          and recovery mechanisms behave safely.
+          and recovery mechanisms behave as expected.
         </p>
       </div>
 
@@ -69,7 +69,7 @@ export function ReliabilityPanel() {
 
         <ControlCard
           title="Transport"
-          description="Close the active socket and exercise automatic reconnection."
+          description="Force the active socket to close and verify automatic reconnection."
         >
           <button
             type="button"
@@ -85,7 +85,7 @@ export function ReliabilityPanel() {
 
         <ControlCard
           title="Parser"
-          description="Inject malformed external data. The application should ignore it safely."
+          description="Inject malformed market data and verify that the application rejects it without disrupting the stream."
         >
           <button
             type="button"
@@ -100,7 +100,7 @@ export function ReliabilityPanel() {
 
         <ControlCard
           title="Connection"
-          description="Tear down the active transport and establish a fresh connection."
+          description="Restart the active transport and establish a fresh WebSocket connection."
         >
           <button
             type="button"

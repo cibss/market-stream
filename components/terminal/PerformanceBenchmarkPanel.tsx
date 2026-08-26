@@ -78,8 +78,8 @@ export function PerformanceBenchmarkPanel() {
           </p>
 
           <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
-            Runs repeatable Main Thread vs Web Worker scenarios at 1k, 5k and 10k simulated events
-            per second.
+            Run repeatable benchmarks comparing Main Thread and Web Worker processing at 1k, 5k, and
+            10k simulated events per second.
           </p>
         </div>
 

@@ -69,8 +69,8 @@ export function MarketTerminal() {
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
-              A high-performance real-time market terminal exploring streaming architecture, browser
-              concurrency, resilience and rendering performance.
+              A real-time market engineering terminal for exploring streaming architecture, browser
+              concurrency, resilience, and rendering performance.
             </p>
           </div>
 
@@ -187,7 +187,7 @@ export function MarketTerminal() {
 
             <Arrow />
 
-            <ArchitectureNode>Redux</ArchitectureNode>
+            <ArchitectureNode>Redux Toolkit</ArchitectureNode>
 
             <Arrow />
 
@@ -195,8 +195,8 @@ export function MarketTerminal() {
           </div>
 
           <p className="mt-5 max-w-4xl text-sm leading-6 text-zinc-600">
-            High-frequency events are normalized outside React, batched through RxJS, optionally
-            processed in a Web Worker, committed into bounded Redux state, and rendered through
+            High-frequency events are normalized outside React, batched with RxJS, optionally
+            processed in a Web Worker, committed to bounded Redux state, and rendered through
             incremental chart updates and a virtualized activity feed.
           </p>
         </section>

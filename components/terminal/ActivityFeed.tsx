@@ -67,7 +67,7 @@ export function ActivityFeed() {
         <div>
           <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">MARKET ACTIVITY</p>
 
-          <p className="mt-1 text-xs text-zinc-700">Sampled realtime events</p>
+          <p className="mt-1 text-xs text-zinc-700">Sampled real-time events</p>
         </div>
 
         <div className="text-right">
