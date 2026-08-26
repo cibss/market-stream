@@ -79,8 +79,8 @@ export type ProcessedMarketBatch = {
   /**
    * Pure analytics computation time.
    *
-   * For Web Workers this does NOT include
-   * postMessage / structured clone overhead.
+   * For Web Workers this does not include
+   * messaging / structured-clone overhead.
    */
   processingDurationMs: number;
 };
@@ -96,29 +96,10 @@ export type ProcessingMetrics = {
 };
 
 export type ProcessorMetrics = {
-  /**
-   * Time spent inside MarketAnalyticsEngine.
-   */
   lastProcessingMs: number;
 
   averageProcessingMs: number;
 
-  /**
-   * Full caller-visible duration.
-   *
-   * Worker:
-   *
-   * postMessage
-   * → queue
-   * → processing
-   * → postMessage response
-   *
-   * Main thread:
-   *
-   * function call
-   * → processing
-   * → return
-   */
   lastRoundTripMs: number;
 
   averageRoundTripMs: number;
@@ -126,6 +107,58 @@ export type ProcessorMetrics = {
   processedBatches: number;
 
   processedEvents: number;
+};
+
+/**
+ * One-second OHLC candle.
+ *
+ * `time` is Unix time in seconds.
+ *
+ * We deliberately keep Lightweight Charts'
+ * types outside our domain model.
+ */
+export type MarketCandle = {
+  time: number;
+
+  open: number;
+
+  high: number;
+
+  low: number;
+
+  close: number;
+};
+
+export type MarketCandleMap = Record<MarketSymbol, MarketCandle[]>;
+
+export type MarketDirection = "up" | "down" | "flat";
+
+export type MarketActivity = {
+  id: string;
+
+  symbol: MarketSymbol;
+
+  price: number;
+
+  direction: MarketDirection;
+
+  timestamp: number;
+};
+
+export type MarketVisualizationUpdate = {
+  /**
+   * Only the latest changed candle for
+   * each symbol is emitted per RxJS batch.
+   */
+  candles: Partial<Record<MarketSymbol, MarketCandle>>;
+
+  /**
+   * A sampled subset of raw events.
+   *
+   * We intentionally do not push every one of
+   * 10,000 simulated events/sec into Redux.
+   */
+  activity: MarketActivity[];
 };
 
 export function createEmptyTickerMap(): MarketTickerMap {
@@ -141,5 +174,13 @@ export function createEmptyAnalyticsMap(): AnalyticsMap {
     "BTC-USD": null,
     "ETH-USD": null,
     "SOL-USD": null,
+  };
+}
+
+export function createEmptyCandleMap(): MarketCandleMap {
+  return {
+    "BTC-USD": [],
+    "ETH-USD": [],
+    "SOL-USD": [],
   };
 }

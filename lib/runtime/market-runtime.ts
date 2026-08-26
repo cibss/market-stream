@@ -14,7 +14,7 @@ import {
   selectShouldConnect,
   transportMetricsReceived,
 } from "@/features/connection/connection.slice";
-import { marketBatchProcessed } from "@/features/market/market.slice";
+import { marketBatchProcessed, marketVisualizationReceived } from "@/features/market/market.slice";
 import {
   type DataSource,
   MARKET_SYMBOLS,
@@ -30,6 +30,7 @@ import {
 import { createMarketStream } from "@/lib/market-data/market-stream";
 import { MarketSimulator } from "@/lib/market-data/simulator";
 import { MarketAnalyticsEngine } from "@/lib/market-processing/analytics-engine";
+import { MarketVisualizationEngine } from "@/lib/market-processing/market-visualization-engine";
 import { MarketWorkerClient } from "@/lib/market-processing/worker-client";
 import type { AppStore } from "@/lib/store/store";
 import { WebSocketClient } from "@/lib/websocket/websocket-client";
@@ -40,6 +41,8 @@ export class MarketRuntime {
   private readonly marketStream = createMarketStream();
 
   private readonly mainEngine = new MarketAnalyticsEngine();
+
+  private readonly visualizationEngine = new MarketVisualizationEngine();
 
   private readonly workerClient = new MarketWorkerClient();
 
@@ -116,6 +119,18 @@ export class MarketRuntime {
 
     this.subscriptions.add(
       this.marketStream.tickerBatch$.subscribe((batch) => {
+        /**
+         * Visualization processing is intentionally
+         * lightweight and independent from the heavy
+         * analytics processor.
+         *
+         * This keeps chart/feed updates responsive
+         * even when Web Worker analytics has queued work.
+         */
+        const visualization = this.visualizationEngine.process(batch);
+
+        this.store.dispatch(marketVisualizationReceived(visualization));
+
         void this.processBatch(batch);
       }),
     );
@@ -172,6 +187,8 @@ export class MarketRuntime {
 
     this.resetProcessors();
 
+    this.visualizationEngine.reset();
+
     if (source === "live") {
       this.simulator.stop();
 
@@ -202,13 +219,9 @@ export class MarketRuntime {
 
     this.activeRate = rate;
 
-    /**
-     * A rate change defines a new benchmark workload.
-     *
-     * Previous analytics history should not leak
-     * into the new scenario.
-     */
     this.resetProcessors();
+
+    this.visualizationEngine.reset();
 
     if (this.activeSource !== "simulation") {
       return;
@@ -316,13 +329,6 @@ export class MarketRuntime {
 
     const mode = this.activeMode ?? "main-thread";
 
-    /**
-     * This measures the duration visible to
-     * MarketRuntime itself.
-     *
-     * For workers, this includes message
-     * round-trip overhead.
-     */
     const roundTripStartedAt = performance.now();
 
     try {

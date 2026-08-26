@@ -16,22 +16,16 @@ import {
   selectConnectionMetrics,
   selectConnectionStatus,
 } from "@/features/connection/connection.slice";
-import { selectAnalytics, selectTickerBySymbol } from "@/features/market/market.selectors";
-import { MARKET_SYMBOLS, type MarketSymbol } from "@/features/market/market.types";
+import { selectAnalytics } from "@/features/market/market.selectors";
 import { useBrowserPerformance } from "@/hooks/use-browser-performance";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 
+import { ActivityFeed } from "./ActivityFeed";
 import { AnalyticsPanel } from "./AnalyticsPanel";
 import { ConnectionPanel } from "./ConnectionPanel";
-import { PriceCard } from "./PriceCard";
+import { MarketChart } from "./MarketChart";
 import { ProcessingLab } from "./ProcessingLab";
-import ProcessingMetric from "./ProcessingMetric";
-
-function ConnectedPriceCard({ symbol }: { symbol: MarketSymbol }) {
-  const ticker = useAppSelector((state) => selectTickerBySymbol(state, symbol) ?? null);
-
-  return <PriceCard symbol={symbol} ticker={ticker} />;
-}
+import { Watchlist } from "./Watchlist";
 
 export function MarketTerminal() {
   const dispatch = useAppDispatch();
@@ -54,11 +48,11 @@ export function MarketTerminal() {
 
   const browserMetrics = useBrowserPerformance();
 
-  const isConnected =
+  const isConnectionActive =
     status === "connected" || status === "connecting" || status === "reconnecting";
 
   return (
-    <main className="min-h-screen bg-[#06080c] text-zinc-100">
+    <main className="bg-[#06080c] text-zinc-100">
       <div className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
         <header className="flex flex-col gap-6 border-b border-white/10 pb-7 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -75,15 +69,15 @@ export function MarketTerminal() {
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">
-              A real-time market engineering terminal built to explore streaming architecture,
-              resilience, and browser performance.
+              A high-performance real-time market terminal exploring streaming architecture, browser
+              concurrency, resilience and rendering performance.
             </p>
           </div>
 
           <div className="flex gap-2">
             <button
               type="button"
-              disabled={isConnected}
+              disabled={dataSource !== "live" || isConnectionActive}
               onClick={() => {
                 dispatch(connectRequested());
               }}
@@ -94,7 +88,7 @@ export function MarketTerminal() {
 
             <button
               type="button"
-              disabled={!isConnected}
+              disabled={dataSource !== "live" || !isConnectionActive}
               onClick={() => {
                 dispatch(disconnectRequested());
               }}
@@ -106,22 +100,36 @@ export function MarketTerminal() {
         </header>
 
         <section className="mt-8">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">LIVE MARKET</p>
+              <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">
+                {dataSource === "live" ? "LIVE MARKET" : "SIMULATED MARKET"}
+              </p>
 
-              <p className="mt-1 text-sm text-zinc-600">Coinbase Advanced Trade market data</p>
+              <p className="mt-1 text-sm text-zinc-600">
+                {dataSource === "live"
+                  ? "Coinbase Advanced Trade via MarketStream Edge Relay"
+                  : `${simulationRate.toLocaleString()} controlled events per second`}
+              </p>
             </div>
 
-            <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-xs text-zinc-500">
-              Native WebSocket
+            <div className="flex items-center gap-2">
+              <TechnologyBadge>RxJS</TechnologyBadge>
+
+              <TechnologyBadge>
+                {processingMode === "web-worker" ? "Web Worker" : "Main Thread"}
+              </TechnologyBadge>
+
+              <TechnologyBadge>Redux Toolkit</TechnologyBadge>
             </div>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
-            {MARKET_SYMBOLS.map((symbol) => (
-              <ConnectedPriceCard key={symbol} symbol={symbol} />
-            ))}
+          <div className="grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)_300px]">
+            <Watchlist />
+
+            <MarketChart />
+
+            <ActivityFeed />
           </div>
         </section>
 
@@ -153,23 +161,12 @@ export function MarketTerminal() {
           <AnalyticsPanel analytics={analytics} />
         </div>
 
-        <section className="mt-4 grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 sm:grid-cols-3">
-          <ProcessingMetric label="UI commits / sec" value={processingMetrics.uiCommitsPerSecond} />
-
-          <ProcessingMetric label="Last batch size" value={processingMetrics.lastBatchSize} />
-
-          <ProcessingMetric
-            label="Ticker updates processed"
-            value={processingMetrics.totalTickerUpdates.toLocaleString()}
-          />
-        </section>
-
         <section className="mt-6 rounded-xl border border-white/10 bg-white/[0.02] p-5">
           <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">
             CURRENT ARCHITECTURE
           </p>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3 font-mono text-sm">
+          <div className="mt-5 flex flex-wrap items-center gap-3 font-mono text-xs">
             <ArchitectureNode>Market Source</ArchitectureNode>
 
             <Arrow />
@@ -178,24 +175,41 @@ export function MarketTerminal() {
 
             <Arrow />
 
+            <ArchitectureNode>WebSocket</ArchitectureNode>
+
+            <Arrow />
+
             <ArchitectureNode>RxJS</ArchitectureNode>
 
             <Arrow />
 
-            <ArchitectureNode>Worker</ArchitectureNode>
+            <ArchitectureNode>Processor</ArchitectureNode>
 
             <Arrow />
 
-            <ArchitectureNode>React</ArchitectureNode>
+            <ArchitectureNode>Redux</ArchitectureNode>
+
+            <Arrow />
+
+            <ArchitectureNode>Virtualized UI</ArchitectureNode>
           </div>
 
-          <p className="mt-5 max-w-3xl text-sm leading-6 text-zinc-600">
-            This is intentionally the baseline architecture. In the next milestones we will measure
-            its limitations before adding RxJS batching, Redux Toolkit, and Web Workers.
+          <p className="mt-5 max-w-4xl text-sm leading-6 text-zinc-600">
+            High-frequency events are normalized outside React, batched through RxJS, optionally
+            processed in a Web Worker, committed into bounded Redux state, and rendered through
+            incremental chart updates and a virtualized activity feed.
           </p>
         </section>
       </div>
     </main>
+  );
+}
+
+function TechnologyBadge({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-[10px] text-zinc-500">
+      {children}
+    </span>
   );
 }
 

@@ -7,8 +7,13 @@ import benchmarkReducer, {
   simulationRateChanged,
 } from "@/features/benchmark/benchmark.slice";
 import connectionReducer, { connectionMetricsReset } from "@/features/connection/connection.slice";
-import marketReducer, { marketAnalyticsReset, marketReset } from "@/features/market/market.slice";
+import marketReducer, {
+  marketAnalyticsReset,
+  marketReset,
+  marketVisualizationReset,
+} from "@/features/market/market.slice";
 import reliabilityReducer from "@/features/reliability/reliability.slice";
+import terminalReducer from "@/features/terminal/terminal.slice";
 
 const listenerMiddleware = createListenerMiddleware();
 
@@ -22,6 +27,8 @@ export const makeStore = () =>
       benchmark: benchmarkReducer,
 
       reliability: reliabilityReducer,
+
+      terminal: terminalReducer,
     },
 
     middleware: (getDefaultMiddleware) =>
@@ -50,6 +57,12 @@ startAppListening({
       listenerApi.dispatch(marketReset());
 
       listenerApi.dispatch(connectionMetricsReset());
+
+      return;
+    }
+
+    if (simulationRateChanged.match(action)) {
+      listenerApi.dispatch(marketVisualizationReset());
     }
   },
 });
