@@ -39,21 +39,6 @@ export type ConnectionMetrics = {
   reconnectCount: number;
 };
 
-export function createEmptyTickerMap(): MarketTickerMap {
-  return {
-    "BTC-USD": null,
-    "ETH-USD": null,
-    "SOL-USD": null,
-  };
-}
-
-export type ProcessingMetrics = {
-  inputEventsPerSecond: number;
-  uiCommitsPerSecond: number;
-  lastBatchSize: number;
-  totalTickerUpdates: number;
-};
-
 export type DataSource = "live" | "simulation";
 
 export type ProcessingMode = "main-thread" | "web-worker";
@@ -84,14 +69,6 @@ export type SymbolAnalytics = {
 
 export type AnalyticsMap = Record<MarketSymbol, SymbolAnalytics | null>;
 
-export function createEmptyAnalyticsMap(): AnalyticsMap {
-  return {
-    "BTC-USD": null,
-    "ETH-USD": null,
-    "SOL-USD": null,
-  };
-}
-
 export type ProcessedMarketBatch = {
   latestTickers: MarketTicker[];
 
@@ -99,15 +76,70 @@ export type ProcessedMarketBatch = {
 
   batchSize: number;
 
+  /**
+   * Pure analytics computation time.
+   *
+   * For Web Workers this does NOT include
+   * postMessage / structured clone overhead.
+   */
   processingDurationMs: number;
 };
 
+export type ProcessingMetrics = {
+  inputEventsPerSecond: number;
+
+  uiCommitsPerSecond: number;
+
+  lastBatchSize: number;
+
+  totalTickerUpdates: number;
+};
+
 export type ProcessorMetrics = {
+  /**
+   * Time spent inside MarketAnalyticsEngine.
+   */
   lastProcessingMs: number;
 
   averageProcessingMs: number;
+
+  /**
+   * Full caller-visible duration.
+   *
+   * Worker:
+   *
+   * postMessage
+   * → queue
+   * → processing
+   * → postMessage response
+   *
+   * Main thread:
+   *
+   * function call
+   * → processing
+   * → return
+   */
+  lastRoundTripMs: number;
+
+  averageRoundTripMs: number;
 
   processedBatches: number;
 
   processedEvents: number;
 };
+
+export function createEmptyTickerMap(): MarketTickerMap {
+  return {
+    "BTC-USD": null,
+    "ETH-USD": null,
+    "SOL-USD": null,
+  };
+}
+
+export function createEmptyAnalyticsMap(): AnalyticsMap {
+  return {
+    "BTC-USD": null,
+    "ETH-USD": null,
+    "SOL-USD": null,
+  };
+}

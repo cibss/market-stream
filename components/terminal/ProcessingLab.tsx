@@ -89,18 +89,17 @@ export function ProcessingLab({
           >
             {SIMULATION_RATES.map((rate) => (
               <option key={rate} value={rate}>
-                {rate.toLocaleString()}
-                {" events/sec"}
+                {rate.toLocaleString()} events/sec
               </option>
             ))}
           </select>
         </ControlGroup>
       </div>
 
-      <div className="grid gap-px border-t border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-px border-t border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
         <Metric
           testId="input-events-per-second"
-          label="Input events / sec"
+          label="Input / sec"
           value={processingMetrics.inputEventsPerSecond}
         />
 
@@ -118,8 +117,14 @@ export function ProcessingLab({
 
         <Metric
           testId="processing-duration"
-          label="Processing"
+          label="Compute"
           value={`${processorMetrics.lastProcessingMs.toFixed(2)} ms`}
+        />
+
+        <Metric
+          testId="round-trip-duration"
+          label="Round trip"
+          value={`${processorMetrics.lastRoundTripMs.toFixed(2)} ms`}
         />
 
         <Metric testId="browser-fps" label="FPS" value={browserMetrics.fps} />
@@ -128,6 +133,12 @@ export function ProcessingLab({
           testId="long-tasks-per-second"
           label="Long tasks / sec"
           value={browserMetrics.longTasksPerSecond}
+        />
+
+        <Metric
+          testId="average-round-trip"
+          label="Avg round trip"
+          value={`${processorMetrics.averageRoundTripMs.toFixed(2)} ms`}
         />
       </div>
     </section>

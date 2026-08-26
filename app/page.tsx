@@ -1,4 +1,5 @@
 import { MarketTerminal } from "@/components/terminal/MarketTerminal";
+import { PerformanceBenchmarkPanel } from "@/components/terminal/PerformanceBenchmarkPanel";
 import { ReliabilityPanel } from "@/components/terminal/ReliabilityPanel";
 
 export default function Home() {
@@ -8,6 +9,10 @@ export default function Home() {
 
       <div className="mx-auto max-w-7xl px-5 pb-10 sm:px-8">
         <ReliabilityPanel />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-5 pb-10 sm:px-8">
+        <PerformanceBenchmarkPanel />
       </div>
     </div>
   );

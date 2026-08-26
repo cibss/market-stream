@@ -22,15 +22,25 @@ type BenchmarkState = {
 
 const initialProcessingMetrics: ProcessingMetrics = {
   inputEventsPerSecond: 0,
+
   uiCommitsPerSecond: 0,
+
   lastBatchSize: 0,
+
   totalTickerUpdates: 0,
 };
 
 const initialProcessorMetrics: ProcessorMetrics = {
   lastProcessingMs: 0,
+
   averageProcessingMs: 0,
+
+  lastRoundTripMs: 0,
+
+  averageRoundTripMs: 0,
+
   processedBatches: 0,
+
   processedEvents: 0,
 };
 
@@ -71,7 +81,10 @@ const benchmarkSlice = createSlice({
     processorBatchCompleted(
       state,
       action: PayloadAction<{
-        durationMs: number;
+        processingDurationMs: number;
+
+        roundTripDurationMs: number;
+
         batchSize: number;
       }>,
     ) {
@@ -79,14 +92,24 @@ const benchmarkSlice = createSlice({
 
       const nextBatchCount = previous.processedBatches + 1;
 
-      const nextAverage =
-        (previous.averageProcessingMs * previous.processedBatches + action.payload.durationMs) /
+      const nextAverageProcessing =
+        (previous.averageProcessingMs * previous.processedBatches +
+          action.payload.processingDurationMs) /
+        nextBatchCount;
+
+      const nextAverageRoundTrip =
+        (previous.averageRoundTripMs * previous.processedBatches +
+          action.payload.roundTripDurationMs) /
         nextBatchCount;
 
       state.processorMetrics = {
-        lastProcessingMs: action.payload.durationMs,
+        lastProcessingMs: action.payload.processingDurationMs,
 
-        averageProcessingMs: nextAverage,
+        averageProcessingMs: nextAverageProcessing,
+
+        lastRoundTripMs: action.payload.roundTripDurationMs,
+
+        averageRoundTripMs: nextAverageRoundTrip,
 
         processedBatches: nextBatchCount,
 

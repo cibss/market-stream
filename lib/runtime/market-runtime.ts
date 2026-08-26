@@ -202,6 +202,14 @@ export class MarketRuntime {
 
     this.activeRate = rate;
 
+    /**
+     * A rate change defines a new benchmark workload.
+     *
+     * Previous analytics history should not leak
+     * into the new scenario.
+     */
+    this.resetProcessors();
+
     if (this.activeSource !== "simulation") {
       return;
     }
@@ -209,6 +217,8 @@ export class MarketRuntime {
     if (this.streamPaused) {
       return;
     }
+
+    this.simulator.reset();
 
     this.simulator.start(rate);
   }
@@ -265,14 +275,6 @@ export class MarketRuntime {
     this.simulator.start(rate);
   }
 
-  /**
-   * Makes the active socket close
-   * unexpectedly from the point of
-   * view of our connection manager.
-   *
-   * The normal reconnect path should
-   * recover automatically.
-   */
   simulateTransportFailure() {
     if (this.activeSource !== "live") {
       return;
@@ -285,16 +287,6 @@ export class MarketRuntime {
     this.client.simulateFailure();
   }
 
-  /**
-   * Pushes malformed external data
-   * directly into the parser boundary.
-   *
-   * Expected behaviour:
-   *
-   * parser rejects it
-   * no Redux update
-   * no UI crash
-   */
   injectInvalidMessage() {
     this.marketStream.pushLiveMessage("{ invalid-market-message");
   }
@@ -324,11 +316,22 @@ export class MarketRuntime {
 
     const mode = this.activeMode ?? "main-thread";
 
+    /**
+     * This measures the duration visible to
+     * MarketRuntime itself.
+     *
+     * For workers, this includes message
+     * round-trip overhead.
+     */
+    const roundTripStartedAt = performance.now();
+
     try {
       const result =
         mode === "web-worker"
           ? await this.workerClient.process(batch)
           : this.mainEngine.process(batch);
+
+      const roundTripDurationMs = performance.now() - roundTripStartedAt;
 
       if (generation !== this.processorGeneration) {
         return;
@@ -338,7 +341,9 @@ export class MarketRuntime {
 
       this.store.dispatch(
         processorBatchCompleted({
-          durationMs: result.processingDurationMs,
+          processingDurationMs: result.processingDurationMs,
+
+          roundTripDurationMs,
 
           batchSize: result.batchSize,
         }),
