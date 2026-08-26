@@ -87,6 +87,7 @@ export function ProcessingLab({
 
         <ControlGroup label="Simulation rate">
           <select
+            aria-label="Simulation rate"
             disabled={dataSource !== "simulation"}
             value={simulationRate}
             onChange={(event) =>
@@ -106,25 +107,33 @@ export function ProcessingLab({
 
       <div className="grid gap-px border-t border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-6">
         <Metric
+          testId="input-events-per-second"
           label="Input events / sec"
           value={processingMetrics.inputEventsPerSecond}
         />
 
         <Metric
+          testId="ui-commits-per-second"
           label="UI commits / sec"
           value={processingMetrics.uiCommitsPerSecond}
         />
 
-        <Metric label="Last batch" value={processingMetrics.lastBatchSize} />
+        <Metric
+          testId="last-batch-size"
+          label="Last batch"
+          value={processingMetrics.lastBatchSize}
+        />
 
         <Metric
+          testId="processing-duration"
           label="Processing"
           value={`${processorMetrics.lastProcessingMs.toFixed(2)} ms`}
         />
 
-        <Metric label="FPS" value={browserMetrics.fps} />
+        <Metric testId="browser-fps" label="FPS" value={browserMetrics.fps} />
 
         <Metric
+          testId="long-tasks-per-second"
           label="Long tasks / sec"
           value={browserMetrics.longTasksPerSecond}
         />
@@ -164,6 +173,7 @@ function ToggleButton({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={`rounded-lg border px-3 py-2 text-sm transition ${
         active
@@ -179,16 +189,22 @@ function ToggleButton({
 function Metric({
   label,
   value,
+  testId,
 }: {
   label: string;
 
   value: string | number;
+
+  testId: string;
 }) {
   return (
     <div className="bg-[#090b10] px-5 py-4">
       <p className="text-xs text-zinc-600">{label}</p>
 
-      <p className="mt-2 font-mono text-lg font-medium text-zinc-200">
+      <p
+        data-testid={testId}
+        className="mt-2 font-mono text-lg font-medium text-zinc-200"
+      >
         {value}
       </p>
     </div>

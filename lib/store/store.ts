@@ -20,6 +20,8 @@ import benchmarkReducer, {
   simulationRateChanged,
 } from "@/features/benchmark/benchmark.slice";
 
+import reliabilityReducer from "@/features/reliability/reliability.slice";
+
 const listenerMiddleware = createListenerMiddleware();
 
 export const makeStore = () =>
@@ -30,6 +32,8 @@ export const makeStore = () =>
       connection: connectionReducer,
 
       benchmark: benchmarkReducer,
+
+      reliability: reliabilityReducer,
     },
 
     middleware: (getDefaultMiddleware) =>
@@ -49,12 +53,6 @@ const startAppListening = listenerMiddleware.startListening.withTypes<
   AppDispatch
 >();
 
-/*
- * When benchmark configuration
- * changes, previous processor
- * measurements are no longer
- * comparable.
- */
 startAppListening({
   matcher: isAnyOf(
     dataSourceChanged,
@@ -67,12 +65,6 @@ startAppListening({
 
     listenerApi.dispatch(marketAnalyticsReset());
 
-    /*
-     * Switching between live
-     * and simulated data should
-     * not leave stale prices
-     * from the previous source.
-     */
     if (dataSourceChanged.match(action)) {
       listenerApi.dispatch(marketReset());
 
