@@ -1,13 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { MarketTicker } from "@/features/market/market.types";
-
 import { createMarketStream } from "@/lib/market-data/market-stream";
 
-function createTicker(
-  symbol: MarketTicker["symbol"],
-  price: number,
-): MarketTicker {
+function createTicker(symbol: MarketTicker["symbol"], price: number): MarketTicker {
   return {
     symbol,
 
@@ -61,11 +57,7 @@ describe("market stream", () => {
 
     expect(received[0]).toHaveLength(3);
 
-    expect(received[0].map((ticker) => ticker.symbol)).toEqual([
-      "BTC-USD",
-      "ETH-USD",
-      "SOL-USD",
-    ]);
+    expect(received[0].map((ticker) => ticker.symbol)).toEqual(["BTC-USD", "ETH-USD", "SOL-USD"]);
 
     subscription.unsubscribe();
 

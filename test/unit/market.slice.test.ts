@@ -1,13 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { marketBatchProcessed } from "@/features/market/market.slice";
-
 import marketReducer from "@/features/market/market.slice";
-
-import {
-  createEmptyAnalyticsMap,
-  type ProcessedMarketBatch,
-} from "@/features/market/market.types";
+import { marketBatchProcessed } from "@/features/market/market.slice";
+import { createEmptyAnalyticsMap, type ProcessedMarketBatch } from "@/features/market/market.types";
 
 describe("marketSlice", () => {
   it("upserts processed tickers into normalized state", () => {

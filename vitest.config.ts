@@ -36,13 +36,7 @@ export default defineConfig({
 
       include: ["features/**/*.ts", "lib/**/*.ts"],
 
-      exclude: [
-        "**/*.d.ts",
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/*.spec.ts",
-        "**/*.spec.tsx",
-      ],
+      exclude: ["**/*.d.ts", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
     },
   },
 });

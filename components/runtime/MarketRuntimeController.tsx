@@ -2,22 +2,18 @@
 
 import { useEffect, useRef } from "react";
 
-import { selectShouldConnect } from "@/features/connection/connection.slice";
-
 import {
   selectDataSource,
   selectProcessingMode,
   selectSimulationRate,
 } from "@/features/benchmark/benchmark.slice";
-
+import { selectShouldConnect } from "@/features/connection/connection.slice";
 import {
   faultCommandHandled,
   selectPendingFaultCommand,
   selectStreamPaused,
 } from "@/features/reliability/reliability.slice";
-
 import { MarketRuntime } from "@/lib/runtime/market-runtime";
-
 import { useAppDispatch, useAppSelector, useAppStore } from "@/lib/store/hooks";
 
 export function MarketRuntimeController() {

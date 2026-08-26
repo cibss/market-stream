@@ -1,10 +1,6 @@
-import { Subject, bufferTime, filter, map, merge, scan, share } from "rxjs";
+import { bufferTime, filter, map, merge, scan, share, Subject } from "rxjs";
 
-import type {
-  MarketTicker,
-  ProcessingMetrics,
-} from "@/features/market/market.types";
-
+import type { MarketTicker, ProcessingMetrics } from "@/features/market/market.types";
 import { parseCoinbaseTickerMessage } from "@/lib/market-data/coinbase";
 
 export type MarketStreamMetrics = {
@@ -96,8 +92,7 @@ export function createMarketStream() {
 
         totalMessages: previous.totalMessages + messages.length,
 
-        lastMessageAt:
-          messages.length > 0 ? Date.now() : previous.lastMessageAt,
+        lastMessageAt: messages.length > 0 ? Date.now() : previous.lastMessageAt,
       }),
 
       INITIAL_METRICS,
@@ -119,10 +114,7 @@ export function createMarketStream() {
 
     scan(
       (previous, batches): ProcessingMetrics => {
-        const inputEvents = batches.reduce(
-          (total, batch) => total + batch.length,
-          0,
-        );
+        const inputEvents = batches.reduce((total, batch) => total + batch.length, 0);
 
         const lastBatch = batches.at(-1);
 

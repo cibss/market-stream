@@ -20,9 +20,7 @@ test.describe("MarketStream terminal", () => {
 
     await expect
       .poll(async () => {
-        const text = await page
-          .getByTestId("input-events-per-second")
-          .textContent();
+        const text = await page.getByTestId("input-events-per-second").textContent();
 
         return Number(text ?? 0);
       })
@@ -30,18 +28,14 @@ test.describe("MarketStream terminal", () => {
 
     await expect
       .poll(async () => {
-        const text = await page
-          .getByTestId("ui-commits-per-second")
-          .textContent();
+        const text = await page.getByTestId("ui-commits-per-second").textContent();
 
         return Number(text ?? 0);
       })
       .toBeGreaterThan(0);
   });
 
-  test("can switch processing to a Web Worker under simulated load", async ({
-    page,
-  }) => {
+  test("can switch processing to a Web Worker under simulated load", async ({ page }) => {
     await page.goto("/");
 
     await page
@@ -66,9 +60,7 @@ test.describe("MarketStream terminal", () => {
 
     await expect
       .poll(async () => {
-        const text = await page
-          .getByTestId("input-events-per-second")
-          .textContent();
+        const text = await page.getByTestId("input-events-per-second").textContent();
 
         return Number(text ?? 0);
       })
@@ -88,9 +80,7 @@ test.describe("MarketStream terminal", () => {
 
     await expect
       .poll(async () => {
-        const text = await page
-          .getByTestId("input-events-per-second")
-          .textContent();
+        const text = await page.getByTestId("input-events-per-second").textContent();
 
         return Number(text ?? 0);
       })
@@ -115,9 +105,7 @@ test.describe("MarketStream terminal", () => {
      */
     await expect
       .poll(async () => {
-        const text = await page
-          .getByTestId("input-events-per-second")
-          .textContent();
+        const text = await page.getByTestId("input-events-per-second").textContent();
 
         return Number(text ?? 0);
       })
@@ -131,9 +119,7 @@ test.describe("MarketStream terminal", () => {
 
     await expect
       .poll(async () => {
-        const text = await page
-          .getByTestId("input-events-per-second")
-          .textContent();
+        const text = await page.getByTestId("input-events-per-second").textContent();
 
         return Number(text ?? 0);
       })

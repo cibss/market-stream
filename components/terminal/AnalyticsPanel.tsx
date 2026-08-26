@@ -1,7 +1,4 @@
-import {
-  MARKET_SYMBOLS,
-  type AnalyticsMap,
-} from "@/features/market/market.types";
+import { type AnalyticsMap, MARKET_SYMBOLS } from "@/features/market/market.types";
 
 const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
@@ -11,13 +8,9 @@ export function AnalyticsPanel({ analytics }: { analytics: AnalyticsMap }) {
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.02]">
       <div className="border-b border-white/10 p-5">
-        <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">
-          ROLLING ANALYTICS
-        </p>
+        <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">ROLLING ANALYTICS</p>
 
-        <p className="mt-2 text-sm text-zinc-600">
-          Computed from recent market samples.
-        </p>
+        <p className="mt-2 text-sm text-zinc-600">Computed from recent market samples.</p>
       </div>
 
       <div className="overflow-x-auto">
@@ -43,13 +36,8 @@ export function AnalyticsPanel({ analytics }: { analytics: AnalyticsMap }) {
               const data = analytics[symbol];
 
               return (
-                <tr
-                  key={symbol}
-                  className="border-b border-white/5 last:border-none"
-                >
-                  <td className="px-5 py-4 font-medium text-zinc-300">
-                    {symbol}
-                  </td>
+                <tr key={symbol} className="border-b border-white/5 last:border-none">
+                  <td className="px-5 py-4 font-medium text-zinc-300">{symbol}</td>
 
                   <td className="px-5 py-4 font-mono text-zinc-500">
                     {data ? data.sampleSize.toLocaleString() : "—"}

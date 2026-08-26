@@ -1,12 +1,11 @@
 import {
-  SIMULATION_RATES,
   type DataSource,
   type ProcessingMetrics,
   type ProcessingMode,
   type ProcessorMetrics,
+  SIMULATION_RATES,
   type SimulationRate,
 } from "@/features/market/market.types";
-
 import type { BrowserPerformanceMetrics } from "@/hooks/use-browser-performance";
 
 type ProcessingLabProps = {
@@ -43,9 +42,7 @@ export function ProcessingLab({
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.02]">
       <div className="border-b border-white/10 p-5">
-        <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">
-          PROCESSING LAB
-        </p>
+        <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">PROCESSING LAB</p>
 
         <p className="mt-2 text-sm text-zinc-600">
           Compare real-time processing strategies under controlled load.
@@ -54,10 +51,7 @@ export function ProcessingLab({
 
       <div className="grid gap-8 p-5 lg:grid-cols-3">
         <ControlGroup label="Data source">
-          <ToggleButton
-            active={dataSource === "live"}
-            onClick={() => onSourceChange("live")}
-          >
+          <ToggleButton active={dataSource === "live"} onClick={() => onSourceChange("live")}>
             Live Market
           </ToggleButton>
 
@@ -90,9 +84,7 @@ export function ProcessingLab({
             aria-label="Simulation rate"
             disabled={dataSource !== "simulation"}
             value={simulationRate}
-            onChange={(event) =>
-              onRateChange(Number(event.target.value) as SimulationRate)
-            }
+            onChange={(event) => onRateChange(Number(event.target.value) as SimulationRate)}
             className="w-full rounded-lg border border-white/10 bg-[#090b10] px-3 py-2 text-sm text-zinc-300 disabled:opacity-40"
           >
             {SIMULATION_RATES.map((rate) => (
@@ -201,10 +193,7 @@ function Metric({
     <div className="bg-[#090b10] px-5 py-4">
       <p className="text-xs text-zinc-600">{label}</p>
 
-      <p
-        data-testid={testId}
-        className="mt-2 font-mono text-lg font-medium text-zinc-200"
-      >
+      <p data-testid={testId} className="mt-2 font-mono text-lg font-medium text-zinc-200">
         {value}
       </p>
     </div>

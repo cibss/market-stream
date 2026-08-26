@@ -27,10 +27,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isMarketSymbol(value: unknown): value is MarketSymbol {
-  return (
-    typeof value === "string" &&
-    (MARKET_SYMBOLS as readonly string[]).includes(value)
-  );
+  return typeof value === "string" && (MARKET_SYMBOLS as readonly string[]).includes(value);
 }
 
 function toNumber(value: unknown): number | null {
@@ -97,9 +94,7 @@ export function parseCoinbaseTickerMessage(rawMessage: string): MarketTicker[] {
       }
 
       const timestamp =
-        typeof payload.timestamp === "string"
-          ? Date.parse(payload.timestamp)
-          : Date.now();
+        typeof payload.timestamp === "string" ? Date.parse(payload.timestamp) : Date.now();
 
       tickers.push({
         symbol: ticker.product_id,

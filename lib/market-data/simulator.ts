@@ -26,8 +26,7 @@ const INITIAL_PRICES: Record<MarketSymbol, number> = {
 export class MarketSimulator {
   private timer: ReturnType<typeof setInterval> | null = null;
 
-  private state: Record<MarketSymbol, SimulationState> =
-    this.createInitialState();
+  private state: Record<MarketSymbol, SimulationState> = this.createInitialState();
 
   constructor(private readonly onBatch: (batch: MarketTicker[]) => void) {}
 
@@ -83,8 +82,7 @@ export class MarketSimulator {
   }
 
   private generateTicker(): MarketTicker {
-    const symbol =
-      MARKET_SYMBOLS[Math.floor(Math.random() * MARKET_SYMBOLS.length)];
+    const symbol = MARKET_SYMBOLS[Math.floor(Math.random() * MARKET_SYMBOLS.length)];
 
     const market = this.state[symbol];
 

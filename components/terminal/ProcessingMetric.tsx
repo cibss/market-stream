@@ -9,9 +9,7 @@ export default function ProcessingMetric({
     <div className="bg-[#090b10] px-5 py-4">
       <p className="text-xs text-zinc-600">{label}</p>
 
-      <p className="mt-2 font-mono text-lg font-medium text-zinc-200">
-        {value}
-      </p>
+      <p className="mt-2 font-mono text-lg font-medium text-zinc-200">{value}</p>
     </div>
   );
 }

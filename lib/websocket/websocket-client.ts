@@ -92,10 +92,7 @@ export class WebSocketClient {
 
       this.options.onStatusChange?.("error");
 
-      if (
-        socket.readyState === WebSocket.CONNECTING ||
-        socket.readyState === WebSocket.OPEN
-      ) {
+      if (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN) {
         socket.close();
       }
     });
@@ -152,10 +149,7 @@ export class WebSocketClient {
 
     this.intentionallyClosedSockets.add(socket);
 
-    if (
-      socket.readyState === WebSocket.CONNECTING ||
-      socket.readyState === WebSocket.OPEN
-    ) {
+    if (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN) {
       socket.close();
     }
   }
@@ -182,10 +176,7 @@ export class WebSocketClient {
       return;
     }
 
-    if (
-      socket.readyState === WebSocket.CONNECTING ||
-      socket.readyState === WebSocket.OPEN
-    ) {
+    if (socket.readyState === WebSocket.CONNECTING || socket.readyState === WebSocket.OPEN) {
       socket.close();
     }
   }

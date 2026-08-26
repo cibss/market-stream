@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import type { MarketTicker } from "@/features/market/market.types";
-
 import { MarketAnalyticsEngine } from "@/lib/market-processing/analytics-engine";
 
 function createTicker(price: number): MarketTicker {
@@ -30,11 +29,7 @@ describe("MarketAnalyticsEngine", () => {
   it("calculates rolling market statistics", () => {
     const engine = new MarketAnalyticsEngine();
 
-    const result = engine.process([
-      createTicker(100),
-      createTicker(110),
-      createTicker(120),
-    ]);
+    const result = engine.process([createTicker(100), createTicker(110), createTicker(120)]);
 
     const btc = result.analytics["BTC-USD"];
 

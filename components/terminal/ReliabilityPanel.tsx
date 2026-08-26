@@ -1,9 +1,7 @@
 "use client";
 
 import { selectDataSource } from "@/features/benchmark/benchmark.slice";
-
 import { selectConnectionStatus } from "@/features/connection/connection.slice";
-
 import {
   faultCommandRequested,
   selectFaultCount,
@@ -11,7 +9,6 @@ import {
   selectStreamPaused,
   streamPauseChanged,
 } from "@/features/reliability/reliability.slice";
-
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 
 const FAULT_LABELS = {
@@ -37,20 +34,16 @@ export function ReliabilityPanel() {
 
   const liveTransportAvailable =
     dataSource === "live" &&
-    (status === "connected" ||
-      status === "connecting" ||
-      status === "reconnecting");
+    (status === "connected" || status === "connecting" || status === "reconnecting");
 
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.02]">
       <div className="border-b border-white/10 p-5">
-        <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">
-          RELIABILITY LAB
-        </p>
+        <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">RELIABILITY LAB</p>
 
         <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">
-          Inject controlled failures into the streaming pipeline and verify that
-          transport, parsing, and recovery mechanisms behave safely.
+          Inject controlled failures into the streaming pipeline and verify that transport, parsing,
+          and recovery mechanisms behave safely.
         </p>
       </div>
 
@@ -125,10 +118,7 @@ export function ReliabilityPanel() {
       <div className="grid gap-px border-t border-white/10 bg-white/10 sm:grid-cols-2">
         <Metric label="Faults injected" value={faultCount} />
 
-        <Metric
-          label="Last fault"
-          value={lastFault ? FAULT_LABELS[lastFault] : "—"}
-        />
+        <Metric label="Last fault" value={lastFault ? FAULT_LABELS[lastFault] : "—"} />
       </div>
     </section>
   );
@@ -149,9 +139,7 @@ function ControlCard({
     <article className="rounded-lg border border-white/10 bg-[#090b10] p-4">
       <h3 className="text-sm font-medium text-zinc-300">{title}</h3>
 
-      <p className="mt-2 min-h-12 text-xs leading-5 text-zinc-600">
-        {description}
-      </p>
+      <p className="mt-2 min-h-12 text-xs leading-5 text-zinc-600">{description}</p>
 
       <div className="mt-4">{children}</div>
     </article>

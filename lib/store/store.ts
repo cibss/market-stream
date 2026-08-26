@@ -1,17 +1,4 @@
-import {
-  configureStore,
-  createListenerMiddleware,
-  isAnyOf,
-} from "@reduxjs/toolkit";
-
-import marketReducer, {
-  marketAnalyticsReset,
-  marketReset,
-} from "@/features/market/market.slice";
-
-import connectionReducer, {
-  connectionMetricsReset,
-} from "@/features/connection/connection.slice";
+import { configureStore, createListenerMiddleware, isAnyOf } from "@reduxjs/toolkit";
 
 import benchmarkReducer, {
   benchmarkMetricsReset,
@@ -19,7 +6,8 @@ import benchmarkReducer, {
   processingModeChanged,
   simulationRateChanged,
 } from "@/features/benchmark/benchmark.slice";
-
+import connectionReducer, { connectionMetricsReset } from "@/features/connection/connection.slice";
+import marketReducer, { marketAnalyticsReset, marketReset } from "@/features/market/market.slice";
 import reliabilityReducer from "@/features/reliability/reliability.slice";
 
 const listenerMiddleware = createListenerMiddleware();
@@ -48,17 +36,10 @@ export type RootState = ReturnType<AppStore["getState"]>;
 
 export type AppDispatch = AppStore["dispatch"];
 
-const startAppListening = listenerMiddleware.startListening.withTypes<
-  RootState,
-  AppDispatch
->();
+const startAppListening = listenerMiddleware.startListening.withTypes<RootState, AppDispatch>();
 
 startAppListening({
-  matcher: isAnyOf(
-    dataSourceChanged,
-    simulationRateChanged,
-    processingModeChanged,
-  ),
+  matcher: isAnyOf(dataSourceChanged, simulationRateChanged, processingModeChanged),
 
   effect: (action, listenerApi) => {
     listenerApi.dispatch(benchmarkMetricsReset());

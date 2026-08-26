@@ -1,9 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import type {
-  ConnectionMetrics,
-  ConnectionStatus,
-} from "@/features/market/market.types";
+import type { ConnectionMetrics, ConnectionStatus } from "@/features/market/market.types";
 
 type ConnectionState = {
   status: ConnectionStatus;
@@ -90,13 +87,11 @@ export const {
   connectionMetricsReset,
 } = connectionSlice.actions;
 
-export const selectConnectionStatus = (state: {
-  connection: ConnectionState;
-}) => state.connection.status;
+export const selectConnectionStatus = (state: { connection: ConnectionState }) =>
+  state.connection.status;
 
-export const selectConnectionMetrics = (state: {
-  connection: ConnectionState;
-}) => state.connection.metrics;
+export const selectConnectionMetrics = (state: { connection: ConnectionState }) =>
+  state.connection.metrics;
 
 export const selectShouldConnect = (state: { connection: ConnectionState }) =>
   state.connection.shouldConnect;

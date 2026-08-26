@@ -1,9 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export type FaultCommandType =
-  | "simulate-disconnect"
-  | "inject-invalid-message"
-  | "restart-connection";
+  "simulate-disconnect" | "inject-invalid-message" | "restart-connection";
 
 type FaultCommand = {
   id: number;
@@ -86,25 +84,19 @@ const reliabilitySlice = createSlice({
   },
 });
 
-export const {
-  streamPauseChanged,
-  faultCommandRequested,
-  faultCommandHandled,
-  reliabilityReset,
-} = reliabilitySlice.actions;
+export const { streamPauseChanged, faultCommandRequested, faultCommandHandled, reliabilityReset } =
+  reliabilitySlice.actions;
 
 export const selectStreamPaused = (state: { reliability: ReliabilityState }) =>
   state.reliability.streamPaused;
 
-export const selectPendingFaultCommand = (state: {
-  reliability: ReliabilityState;
-}) => state.reliability.pendingCommand;
+export const selectPendingFaultCommand = (state: { reliability: ReliabilityState }) =>
+  state.reliability.pendingCommand;
 
 export const selectFaultCount = (state: { reliability: ReliabilityState }) =>
   state.reliability.totalFaultsInjected;
 
-export const selectLastHandledFault = (state: {
-  reliability: ReliabilityState;
-}) => state.reliability.lastHandledFault;
+export const selectLastHandledFault = (state: { reliability: ReliabilityState }) =>
+  state.reliability.lastHandledFault;
 
 export default reliabilitySlice.reducer;

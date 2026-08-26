@@ -1,6 +1,6 @@
 import {
-  MARKET_SYMBOLS,
   createEmptyAnalyticsMap,
+  MARKET_SYMBOLS,
   type MarketSymbol,
   type MarketTicker,
   type ProcessedMarketBatch,
@@ -59,9 +59,9 @@ export class MarketAnalyticsEngine {
       analytics[symbol] = calculateAnalytics(symbol, prices);
     }
 
-    const resultTickers = MARKET_SYMBOLS.map(
-      (symbol) => latestTickers[symbol],
-    ).filter((ticker): ticker is MarketTicker => ticker !== undefined);
+    const resultTickers = MARKET_SYMBOLS.map((symbol) => latestTickers[symbol]).filter(
+      (ticker): ticker is MarketTicker => ticker !== undefined,
+    );
 
     return {
       latestTickers: resultTickers,

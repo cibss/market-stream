@@ -1,7 +1,4 @@
-import type {
-  ConnectionMetrics,
-  ConnectionStatus,
-} from "@/features/market/market.types";
+import type { ConnectionMetrics, ConnectionStatus } from "@/features/market/market.types";
 
 type ConnectionPanelProps = {
   status: ConnectionStatus;
@@ -21,9 +18,7 @@ export function ConnectionPanel({ status, metrics }: ConnectionPanelProps) {
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.03]">
       <div className="border-b border-white/10 px-5 py-4">
-        <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">
-          STREAM HEALTH
-        </p>
+        <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">STREAM HEALTH</p>
       </div>
 
       <dl className="grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-5">
@@ -56,9 +51,7 @@ export function ConnectionPanel({ status, metrics }: ConnectionPanelProps) {
           <dt>Last message</dt>
 
           <dd>
-            {metrics.lastMessageAt
-              ? new Date(metrics.lastMessageAt).toLocaleTimeString()
-              : "—"}
+            {metrics.lastMessageAt ? new Date(metrics.lastMessageAt).toLocaleTimeString() : "—"}
           </dd>
         </Metric>
       </dl>

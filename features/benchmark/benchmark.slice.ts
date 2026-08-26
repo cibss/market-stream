@@ -80,8 +80,7 @@ const benchmarkSlice = createSlice({
       const nextBatchCount = previous.processedBatches + 1;
 
       const nextAverage =
-        (previous.averageProcessingMs * previous.processedBatches +
-          action.payload.durationMs) /
+        (previous.averageProcessingMs * previous.processedBatches + action.payload.durationMs) /
         nextBatchCount;
 
       state.processorMetrics = {

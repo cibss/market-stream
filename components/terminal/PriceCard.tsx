@@ -1,7 +1,4 @@
-import type {
-  MarketSymbol,
-  MarketTicker,
-} from "@/features/market/market.types";
+import type { MarketSymbol, MarketTicker } from "@/features/market/market.types";
 
 type PriceCardProps = {
   symbol: MarketSymbol;
@@ -27,9 +24,7 @@ export function PriceCard({ symbol, ticker }: PriceCardProps) {
     <article className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">
-            MARKET
-          </p>
+          <p className="text-xs font-medium tracking-[0.18em] text-zinc-500">MARKET</p>
 
           <h2 className="mt-2 text-lg font-semibold text-zinc-100">{symbol}</h2>
         </div>
@@ -40,19 +35,13 @@ export function PriceCard({ symbol, ticker }: PriceCardProps) {
           </p>
 
           {change !== null && change !== undefined ? (
-            <p
-              className={`mt-1 text-sm ${
-                isPositive ? "text-emerald-400" : "text-rose-400"
-              }`}
-            >
+            <p className={`mt-1 text-sm ${isPositive ? "text-emerald-400" : "text-rose-400"}`}>
               {isPositive ? "+" : ""}
               {change.toFixed(2)}%{"  "}
               <span className="text-zinc-600">24h</span>
             </p>
           ) : (
-            <p className="mt-1 text-sm text-zinc-600">
-              Waiting for market data
-            </p>
+            <p className="mt-1 text-sm text-zinc-600">Waiting for market data</p>
           )}
         </div>
       </div>
@@ -61,38 +50,22 @@ export function PriceCard({ symbol, ticker }: PriceCardProps) {
         <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-4 border-t border-white/10 pt-4 text-sm">
           <Metric
             label="24h High"
-            value={
-              ticker.high24h !== null
-                ? currencyFormatter.format(ticker.high24h)
-                : "—"
-            }
+            value={ticker.high24h !== null ? currencyFormatter.format(ticker.high24h) : "—"}
           />
 
           <Metric
             label="24h Low"
-            value={
-              ticker.low24h !== null
-                ? currencyFormatter.format(ticker.low24h)
-                : "—"
-            }
+            value={ticker.low24h !== null ? currencyFormatter.format(ticker.low24h) : "—"}
           />
 
           <Metric
             label="Best Bid"
-            value={
-              ticker.bestBid !== null
-                ? currencyFormatter.format(ticker.bestBid)
-                : "—"
-            }
+            value={ticker.bestBid !== null ? currencyFormatter.format(ticker.bestBid) : "—"}
           />
 
           <Metric
             label="Volume"
-            value={
-              ticker.volume24h !== null
-                ? numberFormatter.format(ticker.volume24h)
-                : "—"
-            }
+            value={ticker.volume24h !== null ? numberFormatter.format(ticker.volume24h) : "—"}
           />
         </dl>
       )}

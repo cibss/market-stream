@@ -3,12 +3,7 @@ export const MARKET_SYMBOLS = ["BTC-USD", "ETH-USD", "SOL-USD"] as const;
 export type MarketSymbol = (typeof MARKET_SYMBOLS)[number];
 
 export type ConnectionStatus =
-  | "idle"
-  | "connecting"
-  | "connected"
-  | "reconnecting"
-  | "disconnected"
-  | "error";
+  "idle" | "connecting" | "connected" | "reconnecting" | "disconnected" | "error";
 
 export type MarketTicker = {
   symbol: MarketSymbol;

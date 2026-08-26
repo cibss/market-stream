@@ -1,7 +1,4 @@
-import type {
-  MarketTicker,
-  ProcessedMarketBatch,
-} from "@/features/market/market.types";
+import type { MarketTicker, ProcessedMarketBatch } from "@/features/market/market.types";
 
 type WorkerResponse = {
   type: "processed";
@@ -25,29 +22,23 @@ export class MarketWorkerClient {
   private pending = new Map<number, PendingRequest>();
 
   constructor() {
-    this.worker = new Worker(
-      new URL("../../workers/market.worker.ts", import.meta.url),
-      {
-        type: "module",
-      },
-    );
+    this.worker = new Worker(new URL("../../workers/market.worker.ts", import.meta.url), {
+      type: "module",
+    });
 
-    this.worker.addEventListener(
-      "message",
-      (event: MessageEvent<WorkerResponse>) => {
-        const { id, result } = event.data;
+    this.worker.addEventListener("message", (event: MessageEvent<WorkerResponse>) => {
+      const { id, result } = event.data;
 
-        const request = this.pending.get(id);
+      const request = this.pending.get(id);
 
-        if (!request) {
-          return;
-        }
+      if (!request) {
+        return;
+      }
 
-        request.resolve(result);
+      request.resolve(result);
 
-        this.pending.delete(id);
-      },
-    );
+      this.pending.delete(id);
+    });
 
     this.worker.addEventListener("error", () => {
       const error = new Error("Market worker failed");

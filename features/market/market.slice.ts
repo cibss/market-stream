@@ -1,12 +1,8 @@
-import {
-  createEntityAdapter,
-  createSlice,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
+import { createEntityAdapter, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import {
-  createEmptyAnalyticsMap,
   type AnalyticsMap,
+  createEmptyAnalyticsMap,
   type MarketSymbol,
   type MarketTicker,
   type ProcessedMarketBatch,
@@ -48,11 +44,7 @@ const marketSlice = createSlice({
   },
 });
 
-export const {
-  marketBatchProcessed,
-  marketReset,
-  marketAnalyticsReset,
-  analyticsReplaced,
-} = marketSlice.actions;
+export const { marketBatchProcessed, marketReset, marketAnalyticsReset, analyticsReplaced } =
+  marketSlice.actions;
 
 export default marketSlice.reducer;

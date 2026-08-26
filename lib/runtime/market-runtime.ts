@@ -1,25 +1,5 @@
 import { Subscription } from "rxjs";
 
-import type { AppStore } from "@/lib/store/store";
-
-import {
-  MARKET_SYMBOLS,
-  type DataSource,
-  type MarketTicker,
-  type ProcessingMode,
-  type SimulationRate,
-} from "@/features/market/market.types";
-
-import { marketBatchProcessed } from "@/features/market/market.slice";
-
-import {
-  connectionOpened,
-  connectionStatusChanged,
-  reconnectScheduled,
-  selectShouldConnect,
-  transportMetricsReceived,
-} from "@/features/connection/connection.slice";
-
 import {
   processingMetricsReceived,
   processorBatchCompleted,
@@ -27,21 +7,31 @@ import {
   selectProcessingMode,
   selectSimulationRate,
 } from "@/features/benchmark/benchmark.slice";
-
+import {
+  connectionOpened,
+  connectionStatusChanged,
+  reconnectScheduled,
+  selectShouldConnect,
+  transportMetricsReceived,
+} from "@/features/connection/connection.slice";
+import { marketBatchProcessed } from "@/features/market/market.slice";
+import {
+  type DataSource,
+  MARKET_SYMBOLS,
+  type MarketTicker,
+  type ProcessingMode,
+  type SimulationRate,
+} from "@/features/market/market.types";
 import {
   COINBASE_MARKET_WS_URL,
   createHeartbeatSubscription,
   createTickerSubscription,
 } from "@/lib/market-data/coinbase";
-
 import { createMarketStream } from "@/lib/market-data/market-stream";
-
 import { MarketSimulator } from "@/lib/market-data/simulator";
-
 import { MarketAnalyticsEngine } from "@/lib/market-processing/analytics-engine";
-
 import { MarketWorkerClient } from "@/lib/market-processing/worker-client";
-
+import type { AppStore } from "@/lib/store/store";
 import { WebSocketClient } from "@/lib/websocket/websocket-client";
 
 type RuntimeStore = Pick<AppStore, "dispatch" | "getState">;

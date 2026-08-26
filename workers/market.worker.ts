@@ -1,8 +1,4 @@
-import type {
-  MarketTicker,
-  ProcessedMarketBatch,
-} from "../features/market/market.types";
-
+import type { MarketTicker, ProcessedMarketBatch } from "../features/market/market.types";
 import { MarketAnalyticsEngine } from "../lib/market-processing/analytics-engine";
 
 type WorkerRequest =

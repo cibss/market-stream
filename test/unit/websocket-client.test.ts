@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ConnectionStatus } from "@/features/market/market.types";
-
 import { WebSocketClient } from "@/lib/websocket/websocket-client";
 
 class MockWebSocket extends EventTarget {
