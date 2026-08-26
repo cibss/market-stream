@@ -3,62 +3,69 @@ import {
   type MarketSymbol,
   type MarketTicker,
 } from "@/features/market/market.types";
+import { env } from "@/lib/config/env";
 
-export const COINBASE_MARKET_WS_URL =
-  "wss://market-stream-gateway.market-stream-gateway.workers.dev";
+type CoinbaseTicker = {
+  product_id?: string;
+
+  price?: string;
+
+  price_percent_chg_24_h?: string;
+
+  volume_24_h?: string;
+
+  high_24_h?: string;
+
+  low_24_h?: string;
+
+  best_bid?: string;
+
+  best_ask?: string;
+};
+
+type CoinbaseEvent = {
+  type?: string;
+
+  tickers?: CoinbaseTicker[];
+};
+
+type CoinbaseMessage = {
+  channel?: string;
+
+  timestamp?: string;
+
+  events?: CoinbaseEvent[];
+};
+
+export const COINBASE_MARKET_WS_URL = env.marketWebSocketUrl;
 
 export function createTickerSubscription(symbols: readonly MarketSymbol[]) {
   return JSON.stringify({
     type: "subscribe",
-    channel: "ticker",
+
     product_ids: symbols,
+
+    channel: "ticker",
   });
 }
 
 export function createHeartbeatSubscription() {
   return JSON.stringify({
     type: "subscribe",
+
     channel: "heartbeats",
   });
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function isMarketSymbol(value: unknown): value is MarketSymbol {
-  return typeof value === "string" && (MARKET_SYMBOLS as readonly string[]).includes(value);
-}
-
-function toNumber(value: unknown): number | null {
-  if (typeof value !== "string" && typeof value !== "number") {
-    return null;
-  }
-
-  if (value === "") {
-    return null;
-  }
-
-  const result = Number(value);
-
-  return Number.isFinite(result) ? result : null;
-}
-
-export function parseCoinbaseTickerMessage(rawMessage: string): MarketTicker[] {
-  let payload: unknown;
+export function parseCoinbaseTickerMessage(message: string): MarketTicker[] {
+  let payload: CoinbaseMessage;
 
   try {
-    payload = JSON.parse(rawMessage);
+    payload = JSON.parse(message) as CoinbaseMessage;
   } catch {
     return [];
   }
 
-  if (!isRecord(payload)) {
-    return [];
-  }
-
-  // Heartbeats, subscription confirmations,
-  // and unknown message types are intentionally ignored.
   if (payload.channel !== "ticker") {
     return [];
   }
@@ -67,56 +74,87 @@ export function parseCoinbaseTickerMessage(rawMessage: string): MarketTicker[] {
     return [];
   }
 
+  const updatedAt = parseTimestamp(payload.timestamp);
+
   const tickers: MarketTicker[] = [];
 
   for (const event of payload.events) {
-    if (!isRecord(event)) {
-      continue;
-    }
-
     if (!Array.isArray(event.tickers)) {
       continue;
     }
 
     for (const ticker of event.tickers) {
-      if (!isRecord(ticker)) {
+      const symbol = ticker.product_id;
+
+      if (!isTrackedSymbol(symbol)) {
         continue;
       }
 
-      if (!isMarketSymbol(ticker.product_id)) {
-        continue;
-      }
-
-      const price = toNumber(ticker.price);
+      const price = toRequiredNumber(ticker.price);
 
       if (price === null) {
         continue;
       }
 
-      const timestamp =
-        typeof payload.timestamp === "string" ? Date.parse(payload.timestamp) : Date.now();
-
       tickers.push({
-        symbol: ticker.product_id,
+        symbol,
 
         price,
 
-        priceChange24hPct: toNumber(ticker.price_percent_chg_24_h),
+        priceChange24hPct: toNullableNumber(ticker.price_percent_chg_24_h),
 
-        volume24h: toNumber(ticker.volume_24_h),
+        volume24h: toNullableNumber(ticker.volume_24_h),
 
-        high24h: toNumber(ticker.high_24_h),
+        high24h: toNullableNumber(ticker.high_24_h),
 
-        low24h: toNumber(ticker.low_24_h),
+        low24h: toNullableNumber(ticker.low_24_h),
 
-        bestBid: toNumber(ticker.best_bid),
+        bestBid: toNullableNumber(ticker.best_bid),
 
-        bestAsk: toNumber(ticker.best_ask),
+        bestAsk: toNullableNumber(ticker.best_ask),
 
-        updatedAt: Number.isNaN(timestamp) ? Date.now() : timestamp,
+        updatedAt,
       });
     }
   }
 
   return tickers;
+}
+
+function isTrackedSymbol(value: string | undefined): value is MarketSymbol {
+  if (!value) {
+    return false;
+  }
+
+  return (MARKET_SYMBOLS as readonly string[]).includes(value);
+}
+
+function toRequiredNumber(value: string | undefined) {
+  if (value === undefined) {
+    return null;
+  }
+
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function toNullableNumber(value: string | undefined) {
+  if (value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = Number(value);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseTimestamp(value: string | undefined) {
+  if (!value) {
+    return Date.now();
+  }
+
+  const parsed = Date.parse(value);
+
+  return Number.isNaN(parsed) ? Date.now() : parsed;
 }
