@@ -1,38 +1,50 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-
   pull_request:
+    branches:
+      - staging
+      - main
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 env:
   NEXT_PUBLIC_MARKET_WS_URL: wss://example.invalid
 
 jobs:
-  quality:
-    name: Quality
+  quality-tests:
+    name: Quality & Tests
 
     runs-on: ubuntu-latest
 
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     steps:
+      - name: Validate pull request source
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [[ "$BASE_REF" == "main" && "$HEAD_REF" != "staging" ]]; then
+            echo "::error::Pull requests to main must come from the staging branch."
+            echo "Received: $HEAD_REF -> $BASE_REF"
+            exit 1
+          fi
+
+          echo "Valid pull request flow: $HEAD_REF -> $BASE_REF"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version-file: ".nvmrc"
           cache: npm
 
       - name: Install dependencies
@@ -50,34 +62,14 @@ jobs:
       - name: Build production application
         run: npm run build
 
-  e2e:
-    name: E2E
-
-    runs-on: ubuntu-latest
-
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
+      - name: Run E2E tests
         run: npm run test:e2e
 
       - name: Upload Playwright report
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
@@ -85,7 +77,7 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-      - name: Upload Playwright test artifacts
+      - name: Upload Playwright test results
         if: failure()
         uses: actions/upload-artifact@v4
         with:
